@@ -1,0 +1,45 @@
+<html>
+	<head>
+		<title>
+			Chat
+		</title>
+		<script type="text/javascript" src="./socket.io-client/dist/socket.io.js"></script>
+		<script type="text/javascript" src="./jquery.min.js"></script>
+	</head>
+	<body>
+		<h1>Chat Window</h1>
+		<div id="chatWindow">
+		</div>
+		<div>
+			<textarea id="textChat"></textarea>
+			<input type="button" value="send" id="chatEnter">
+		</div>
+	</body>
+	<script type="text/javascript">
+		$(document).ready(()=>{
+			$("#chatEnter").on("click",textSend);
+			var email = prompt("Enter your mail");
+		var socket = io.connect("http://localhost:9001",{query:"email="+email});
+
+		socket.on("joined",(dt)=>{
+			$("#chatWindow").append("<p>" + dt.msg + "</p>");
+		});
+
+		socket.on("visitor",(dt)=>{
+			$("#chatWindow").append("<p>" + dt.msg + "</p>");
+		});
+
+		function textSend(){
+			socket.emit("send",{msg:$("#textChat").val(),from:email});
+			$("#chatWindow").append("<p>you: " + $("#textChat").val() + "</p>");
+			$("#textChat").val("");
+		}
+
+		socket.on("receive",(dt)=>{
+			$("#chatWindow").append("<p>" + dt.from +": " + dt.msg+ "</p>");
+		});	
+		})
+		
+
+	</script>
+</html>

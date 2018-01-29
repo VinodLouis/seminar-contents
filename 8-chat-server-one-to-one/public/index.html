@@ -1,0 +1,186 @@
+<html>
+	<head>
+		<title>
+			Chat
+		</title>
+		<script type="text/javascript" src="./socket.io-client/dist/socket.io.js"></script>
+		<script type="text/javascript" src="./jquery.min.js"></script>
+		<style type="text/css">
+			.row{
+				display: flex;
+				flex-flow: row wrap;
+			}
+
+			#nameArea,#chatAreaWrapper{
+				padding: 5px 25px 25px 25px;
+			}
+			#chatAreaWrapper{
+				display: none;
+			}
+			.name-p{
+				min-width: 250px;
+				padding:5px 10px;
+				background-color: #b3b3b3;
+			}
+			.current-1{
+				background-color: #00ff00;
+			}
+
+			.me{
+				   max-width: 75%;
+				    float: right;
+				    padding: 2px 5px;
+				    text-align: right;
+				    border: 1px solid #000000;
+				    border-radius: 5px;
+				    background-color: aquamarine;
+				    clear: both;
+				    margin-bottom: 5px;
+			}
+			.other{
+					max-width: 75%;
+				    float: left;
+				    padding: 2px 5px;
+				    text-align: left;
+				    border: 1px solid #000000;
+				    border-radius: 5px;
+				    background-color: burlywood;
+				    clear: both;
+				    margin-bottom: 5px;
+			}
+			.counter{
+				background-color: black;
+			    color: #ffffff;
+			    padding: 0px 5px;
+			    border-radius: 50%;
+			    float: right;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Chat Window</h1>
+		<div id="chatWindow" class="row">
+			<div id="nameArea">
+				
+			</div>
+			<div id="chatAreaWrapper">
+				<div id="chatArea">
+						
+				</div>
+				<br/>
+				<div style="clear: both;">
+
+					<textarea id="textChat"></textarea>
+					<input type="button" value="send" id="chatEnter">
+				</div>
+			</div>
+		</div>
+		
+	</body>
+	<script type="text/javascript">
+		$(document).ready(()=>{
+			$("#chatAreaWrapper").hide();
+			var namesArr = [];
+			var messages = {};
+			var myID = "";
+			var currMsg = "";
+			$("#chatEnter").on("click",textSend);
+			$(document).on("click", ".name-p", loadMsg);
+			$(".name-p").on("click",loadMsg);
+			var email = prompt("Enter your mail");
+			var socket = io.connect("http://localhost:9001",{query:"email="+email});
+
+			socket.on("joined",(dt)=>{
+				myID = dt.id;
+				namesArr = dt.data;
+				updateNames();
+				//$("#chatWindow").append("<p>" + dt.msg + "</p>");
+			});
+
+			socket.on("visitor",(dt)=>{
+				namesArr = dt.data;
+				updateNames();
+				//$("#chatWindow").append("<p>" + dt.msg + "</p>");
+			});
+
+			function textSend(){
+				var obj = {toID:currMsg,fromID:myID,msg:$("#textChat").val(),from:email}
+				socket.emit("send",obj);
+				if(messages[currMsg]){
+					messages[currMsg].push(obj);
+				}else{
+					messages[currMsg] = [obj];
+				}
+				renderMsg();
+				//$("#chatWindow").append("<p>you: " + $("#textChat").val() + "</p>");
+				$("#textChat").val("");
+			}
+
+			socket.on("receive",(dt)=>{
+				if(messages[dt.fromID]){
+					messages[dt.fromID].push(dt);
+				}else{
+					messages[dt.fromID] = [dt];
+				}
+				if(dt.fromID == currMsg)
+					renderMsg();
+				else{
+					namesArr.forEach((el)=>{
+						if(el.id == dt.fromID){
+							if(el.unread){
+								el.unread++;
+							}else{
+								el.unread = 1;
+							}	
+						}
+					});
+					updateNames();
+				}
+				//$("#chatWindow").append("<p>" + dt.from +": " + dt.msg+ "</p>");
+			});	
+
+			function updateNames() {
+				var strHTML = "";
+				namesArr.forEach((el)=>{
+					if(el.id != myID){
+						var isCurrent = (el.id == currMsg) ? 1 : 0;
+						strHTML += "<div class='name-p current-" + isCurrent + "' id='"+el.id+"'>"+el.name
+						if(el.unread && el.unread > 0){
+							strHTML += "<span class='counter'>"+el.unread+"</span>";
+						}
+						strHTML +="</div>";	
+					}
+				});
+				$("#nameArea").html(strHTML);
+			}
+
+			function loadMsg(ev) {
+				$("#chatAreaWrapper").show();
+				currMsg = ev.currentTarget.id;
+				renderMsg();
+				namesArr.forEach((el)=>{
+					if(el.id == currMsg){
+						el.unread = 0;	
+					}
+				});
+				updateNames();
+			}
+
+			function renderMsg() {
+				if(messages[currMsg]){
+					var strHTML = "";
+					messages[currMsg].forEach((el)=>{
+						var vlass = (myID == el.fromID) ? 'me' : 'other'
+						strHTML += "<div class='"+ vlass  +"'>"+el.msg+"</div>";
+					});
+					$("#chatArea").html(strHTML);
+				}else{
+					$("#chatArea").html("");
+				}
+			}
+
+		})
+		
+
+	</script>
+</html>

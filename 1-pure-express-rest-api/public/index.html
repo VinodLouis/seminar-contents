@@ -1,0 +1,46 @@
+<html>
+<head>
+	<title>List</title>
+	<style type="text/css">
+		#tblData > table{
+			border:1px solid #000000;
+		}
+	</style>
+	<script type="text/javascript" src="./scripts/jquery.min.js"></script>
+</head>
+<body>
+	<h2>Employee</h2>
+	<div id="tblData"></div>	
+</body>
+<script type="text/javascript">
+	var renderData = (dt)=>{
+		var strHTML = "<table><tr><th>ID</th><th>Name</th><th>City</th><th>Mob</th></tr>";
+		dt.forEach((d)=>{
+			strHTML+= "<tr><td>"+d._id+"</td><td>"+d.name+"</td><td>"+d.city+"</td><td>"+d.mobile+"</td></tr>"
+		});
+		strHTML += "</table>";
+		$("#tblData").html(strHTML);
+	}
+	var populateData = ()=>{
+		$.ajax({
+            url: 'https://pacific-lowlands-88331.herokuapp.com/employee',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+			dataType: "json",
+			success:(dt,res,xhr)=>{
+				if(dt.status == "SUCCESS"){
+					renderData(dt.data);
+				}else{
+					alert("Error");
+				}
+			},
+			error:(dt,res,xhr)=>{
+				console.log(dt);
+			}
+		});	
+	}
+	$(document).ready(()=>{
+		populateData();
+	});
+</script>
+</html>
