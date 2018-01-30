@@ -1,7 +1,7 @@
 
 # Hybrid Desktop App
 
-An application using electron to create hybrid mobile application
+An application using electron to create hybrid desktop application
 
  - NodeJS
  - Electron
