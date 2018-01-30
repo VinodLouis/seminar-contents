@@ -1,7 +1,7 @@
 
 # An end-to-end Chat Server
 
-An application using socket.io for IRC like server
+An application using socket.io for one-to-one channel
 
  - NodeJS
  - Socket.io
