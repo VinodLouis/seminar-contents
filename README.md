@@ -15,4 +15,4 @@ The project consists of ten different demos and an few infographics in theory as
  9. Pubnub video calling
  10. Headless Chrome
 
-Go inside each project to get more details of how to execute it. you will find a READ.me file in each project guiding you.   
+Go inside each project to get more details of how to execute it. you will find a README file in each project guiding you.   
